@@ -56,17 +56,14 @@ public class FIRLocalMessagingHelper {
     int getInt(Bundle bundle, String key) {
         int number = 0;
         try {
-            number = bundle.getInt(key);
-        } catch (Throwable e) {
-            try {
-                number = (int)bundle.getLong(key);
-            } catch (Throwable e1) {
-                try {
-                    number = (int)bundle.getDouble(key);
-                } catch (Throwable e2) {
-                    number = Integer.parseInt(bundle.getString(key));
-                }
+            Object v = bundle.get(key);
+            if(v instanceof Integer ||  v instanceof Double || v instanceof Long) {
+                number = (Integer) v;
+            } else if(v instanceof  String) {
+                number = Integer.parseInt((String)v);
             }
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
         return number;
     }
@@ -74,17 +71,14 @@ public class FIRLocalMessagingHelper {
     long getLong(Bundle bundle, String key) {
         long number = 0;
         try {
-            number = bundle.getLong(key);
-        } catch (Throwable e) {
-            try {
-                number = (long)bundle.getInt(key);
-            } catch (Throwable e1) {
-                try {
-                    number = (long)bundle.getDouble(key);
-                } catch (Throwable e2) {
-                    number = Long.parseLong(bundle.getString(key));
-                }
+            Object v = bundle.get(key);
+            if(v instanceof Integer ||  v instanceof Double || v instanceof Long) {
+                number = (Long) v;
+            } else if(v instanceof  String) {
+                number = Long.parseLong((String)v);
             }
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
         return number;
     }
