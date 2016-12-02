@@ -79,7 +79,7 @@ public class FIRLocalMessagingHelper {
                     .setTicker(bundle.getString("ticker"))
                     .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
                     .setAutoCancel(bundle.getBoolean("auto_cancel", true))
-                    .setNumber(bundle.getInt("number"))
+                    .setNumber((int)(bundle.getDouble("number")))
                     .setSubText(bundle.getString("sub_text"))
                     .setGroup(bundle.getString("group"))
                     .setVibrate(new long[]{0, DEFAULT_VIBRATION})
@@ -113,7 +113,7 @@ public class FIRLocalMessagingHelper {
                 int largeIconResId = res.getIdentifier(largeIcon, "mipmap", packageName);
                 Bitmap largeIconBitmap = BitmapFactory.decodeResource(res, largeIconResId);
 
-                if (largeIconResId != 0 && (largeIcon != null || android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)) {
+                if (largeIconResId != 0 && (largeIcon != null || Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)) {
                     notification.setLargeIcon(largeIconBitmap);
                 }
             }
@@ -131,7 +131,7 @@ public class FIRLocalMessagingHelper {
             }
 
             //color
-            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 notification.setCategory(NotificationCompat.CATEGORY_CALL);
 
                 String color = bundle.getString("color");
