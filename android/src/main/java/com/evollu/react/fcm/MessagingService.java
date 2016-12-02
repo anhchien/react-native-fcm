@@ -62,7 +62,7 @@ public class MessagingService extends FirebaseMessagingService {
         try {
             ai = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
             Bundle bundle = ai.metaData;
-            boolean fcm_enable_custom_notification = bundle.getBoolean("fcm_enable_custom_notification", false);
+            boolean fcm_enable_custom_notification = bundle.getBoolean("com.aotasoft.fcm.customNotification", false);
             if(fcm_enable_custom_notification) {
                 FIRLocalMessagingHelper localMessagingHelper = new FIRLocalMessagingHelper(getApplication());
                 remoteMessage.getData();
