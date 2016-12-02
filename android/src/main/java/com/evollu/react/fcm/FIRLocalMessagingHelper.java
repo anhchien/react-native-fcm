@@ -57,13 +57,13 @@ public class FIRLocalMessagingHelper {
         int number = 0;
         try {
             number = bundle.getInt(key);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             try {
                 number = (int)bundle.getLong(key);
-            } catch (Exception e1) {
+            } catch (Throwable e1) {
                 try {
                     number = (int)bundle.getDouble(key);
-                } catch (Exception e2) {
+                } catch (Throwable e2) {
                     number = Integer.parseInt(bundle.getString(key));
                 }
             }
@@ -75,13 +75,13 @@ public class FIRLocalMessagingHelper {
         long number = 0;
         try {
             number = bundle.getLong(key);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             try {
                 number = (long)bundle.getInt(key);
-            } catch (Exception e1) {
+            } catch (Throwable e1) {
                 try {
                     number = (long)bundle.getDouble(key);
-                } catch (Exception e2) {
+                } catch (Throwable e2) {
                     number = Long.parseLong(bundle.getString(key));
                 }
             }
@@ -107,13 +107,6 @@ public class FIRLocalMessagingHelper {
             if (title == null) {
                 ApplicationInfo appInfo = mContext.getApplicationInfo();
                 title = mContext.getPackageManager().getApplicationLabel(appInfo).toString();
-            }
-
-            int number = 0;
-            try {
-                number = bundle.getInt("number");
-            } catch (Exception e) {
-                e.printStackTrace();
             }
 
             NotificationCompat.Builder notification = new NotificationCompat.Builder(mContext)
