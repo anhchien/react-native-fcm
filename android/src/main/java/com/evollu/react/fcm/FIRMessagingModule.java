@@ -261,4 +261,9 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
     public void onNewIntent(Intent intent){
         sendEvent("FCMNotificationReceived", parseIntent(intent));
     }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+    }
 }

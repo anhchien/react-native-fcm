@@ -1,15 +1,56 @@
 package com.evollu.react.fcm;
 
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.util.Log;
 
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableMap;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
-import org.json.JSONObject;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class MessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "MessagingService";
+
+    public Bundle toBundle(RemoteMessage message) {
+        Bundle bundle = new Bundle();
+        WritableMap params = Arguments.createMap();
+
+        List<String> fcm = Arrays.asList(new String[] {"title", "body", "color", "icon", "tag", "action"});
+
+        if(message.getData() != null){
+            Map<String, String> data = message.getData();
+            Set<String> keysIterator = data.keySet();
+            for(String key: keysIterator){
+                bundle.putString(key, data.get(key));
+                if(fcm.contains(key)) {
+                    params.putString(key, data.get(key));
+                }
+            }
+        }
+
+        if (message.getNotification() != null) {
+            RemoteMessage.Notification notification = message.getNotification();
+            params.putString("title", notification.getTitle());
+            params.putString("body", notification.getBody());
+            params.putString("color", notification.getColor());
+            params.putString("icon", notification.getIcon());
+            params.putString("tag", notification.getTag());
+            params.putString("action", notification.getClickAction());
+        }
+
+        Bundle result = Arguments.toBundle(params);
+        result.putBundle("data", bundle);
+        return result;
+    }
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
@@ -17,5 +58,19 @@ public class MessagingService extends FirebaseMessagingService {
         Intent i = new Intent("com.evollu.react.fcm.ReceiveNotification");
         i.putExtra("data", remoteMessage);
         sendOrderedBroadcast(i, null);
+        ApplicationInfo ai = null;
+        try {
+            ai = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
+            Bundle bundle = ai.metaData;
+            boolean fcm_enable_custom_notification = bundle.getBoolean("fcm_enable_custom_notification", false);
+            if(fcm_enable_custom_notification) {
+                FIRLocalMessagingHelper localMessagingHelper = new FIRLocalMessagingHelper(getApplication());
+                remoteMessage.getData();
+                Bundle messageBundle = toBundle(remoteMessage);
+                localMessagingHelper.sendNotification(messageBundle);
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
     }
 }
