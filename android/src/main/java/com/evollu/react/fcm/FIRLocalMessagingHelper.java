@@ -53,6 +53,42 @@ public class FIRLocalMessagingHelper {
         return (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
     }
 
+    int getInt(Bundle bundle, String key) {
+        int number = 0;
+        try {
+            number = bundle.getInt(key);
+        } catch (Exception e) {
+            try {
+                number = (int)bundle.getLong(key);
+            } catch (Exception e1) {
+                try {
+                    number = (int)bundle.getDouble(key);
+                } catch (Exception e2) {
+                    number = Integer.parseInt(bundle.getString(key));
+                }
+            }
+        }
+        return number;
+    }
+
+    long getLong(Bundle bundle, String key) {
+        long number = 0;
+        try {
+            number = bundle.getLong(key);
+        } catch (Exception e) {
+            try {
+                number = (long)bundle.getInt(key);
+            } catch (Exception e1) {
+                try {
+                    number = (long)bundle.getDouble(key);
+                } catch (Exception e2) {
+                    number = Long.parseLong(bundle.getString(key));
+                }
+            }
+        }
+        return number;
+    }
+
     public void sendNotification(Bundle bundle) {
         try {
             Class intentClass = getMainActivityClass();
@@ -73,13 +109,20 @@ public class FIRLocalMessagingHelper {
                 title = mContext.getPackageManager().getApplicationLabel(appInfo).toString();
             }
 
+            int number = 0;
+            try {
+                number = bundle.getInt("number");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             NotificationCompat.Builder notification = new NotificationCompat.Builder(mContext)
                     .setContentTitle(title)
                     .setContentText(bundle.getString("body"))
                     .setTicker(bundle.getString("ticker"))
                     .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
                     .setAutoCancel(bundle.getBoolean("auto_cancel", true))
-                    .setNumber((int)(bundle.getDouble("number")))
+                    .setNumber(getInt(bundle, "number"))
                     .setSubText(bundle.getString("sub_text"))
                     .setGroup(bundle.getString("group"))
                     .setVibrate(new long[]{0, DEFAULT_VIBRATION})
@@ -142,7 +185,7 @@ public class FIRLocalMessagingHelper {
 
             //vibrate
             if(bundle.containsKey("vibrate")){
-                long vibrate = bundle.getLong("vibrate", Math.round(bundle.getDouble("vibrate", bundle.getInt("vibrate"))));
+                long vibrate = getLong(bundle, "vibrate");
                 if(vibrate > 0){
                     notification.setVibrate(new long[]{0, vibrate});
                 }else{
