@@ -22,7 +22,14 @@ public class MessagingService extends FirebaseMessagingService {
 
     public Bundle toBundle(RemoteMessage message) {
         Bundle bundle = new Bundle();
-        WritableMap params = Arguments.createMap();
+        Bundle params = new Bundle();
+        params.putString("priority", "max");
+        params.putString("sound", "default");
+        params.putLong("vibrate", 300);
+        params.putBoolean("lights", true);
+        params.putBoolean("show_in_foreground", true);
+        params.putBoolean("auto_cancel", true);
+        params.putString("id", "system_message");
 
         List<String> fcm = Arrays.asList(new String[] {"title", "body", "color", "icon", "tag", "action"});
 
@@ -46,10 +53,8 @@ public class MessagingService extends FirebaseMessagingService {
             params.putString("tag", notification.getTag());
             params.putString("action", notification.getClickAction());
         }
-
-        Bundle result = Arguments.toBundle(params);
-        result.putBundle("data", bundle);
-        return result;
+        params.putBundle("data", bundle);
+        return params;
     }
 
     @Override

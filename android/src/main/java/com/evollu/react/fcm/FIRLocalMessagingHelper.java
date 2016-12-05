@@ -17,6 +17,11 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.content.SharedPreferences;
+
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableType;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -53,47 +58,88 @@ public class FIRLocalMessagingHelper {
         return (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
     }
 
-    int getInt(Bundle bundle, String key) {
-        int number = 0;
-        try {
-            Object v = bundle.get(key);
-            if(v instanceof Integer ||  v instanceof Double || v instanceof Long) {
-                number = (Integer) v;
-            } else if(v instanceof  String) {
-                number = Integer.parseInt((String)v);
-            }
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        return number;
-    }
+    public static Bundle toBundle(ReadableMap map) {
+        Bundle bundle = new Bundle();
 
-    long getLong(Bundle bundle, String key) {
-        long number = 0;
-        try {
-            Object v = bundle.get(key);
-            if(v instanceof Integer ||  v instanceof Double || v instanceof Long) {
-                number = (Long) v;
-            } else if(v instanceof  String) {
-                number = Long.parseLong((String)v);
-            }
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        return number;
+        if(map.hasKey("body"))
+            bundle.putString("body", map.getString("body"));
+
+        if(map.hasKey("title"))
+            bundle.putString("title", map.getString("title"));
+
+        if(map.hasKey("ticker"))
+            bundle.putString("ticker", map.getString("ticker"));
+
+        if(map.hasKey("number"))
+            bundle.putInt("number", map.getInt("number"));
+
+        if(map.hasKey("auto_cancel"))
+            bundle.putBoolean("auto_cancel", map.getBoolean("auto_cancel"));
+
+        if(map.hasKey("sub_text"))
+            bundle.putString("sub_text", map.getString("sub_text"));
+
+        if(map.hasKey("group"))
+            bundle.putString("group", map.getString("group"));
+
+        if(map.hasKey("data") && map.getType("data") == ReadableType.Map)
+            bundle.putBundle("data", Arguments.toBundle(map.getMap("data")));
+
+        if(map.hasKey("priority"))
+            bundle.putString("priority", map.getString("priority"));
+
+        if(map.hasKey("icon"))
+            bundle.putString("icon", map.getString("icon"));
+
+        if(map.hasKey("large_icon"))
+            bundle.putString("large_icon", map.getString("large_icon"));
+
+        if(map.hasKey("big_text"))
+            bundle.putString("big_text", map.getString("big_text"));
+
+        if(map.hasKey("sound"))
+            bundle.putString("sound", map.getString("sound"));
+
+        if(map.hasKey("color"))
+            bundle.putString("color", map.getString("color"));
+
+        if(map.hasKey("vibrate"))
+            bundle.putLong("vibrate", (new Double(map.getDouble("vibrate"))).longValue());
+
+        if(map.hasKey("lights"))
+            bundle.putBoolean("lights", map.getBoolean("lights"));
+
+        if(map.hasKey("show_in_foreground"))
+            bundle.putBoolean("show_in_foreground", map.getBoolean("show_in_foreground"));
+
+        if(map.hasKey("click_action"))
+            bundle.putString("click_action", map.getString("click_action"));
+
+        if(map.hasKey("id"))
+            bundle.putString("id", map.getString("id"));
+
+        if(map.hasKey("fire_date"))
+            bundle.putLong("fire_date", (new Double(map.getDouble("fire_date"))).longValue());
+
+        if(map.hasKey("repeat_interval"))
+            bundle.putString("repeat_interval", map.getString("repeat_interval"));
+
+        return bundle;
     }
 
     public void sendNotification(Bundle bundle) {
         try {
+            Log.d(TAG, "1");
             Class intentClass = getMainActivityClass();
             if (intentClass == null) {
                 return;
             }
 
+            Log.d(TAG, "2");
             if (bundle.getString("body") == null) {
                 return;
             }
-
+            Log.d(TAG, "3");
             Resources res = mContext.getResources();
             String packageName = mContext.getPackageName();
 
@@ -102,14 +148,14 @@ public class FIRLocalMessagingHelper {
                 ApplicationInfo appInfo = mContext.getApplicationInfo();
                 title = mContext.getPackageManager().getApplicationLabel(appInfo).toString();
             }
-
+            Log.d(TAG, "4");
             NotificationCompat.Builder notification = new NotificationCompat.Builder(mContext)
                     .setContentTitle(title)
                     .setContentText(bundle.getString("body"))
                     .setTicker(bundle.getString("ticker"))
-                    .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                     .setAutoCancel(bundle.getBoolean("auto_cancel", true))
-                    .setNumber(getInt(bundle, "number"))
+                    .setNumber(bundle.getInt("number", 0))
                     .setSubText(bundle.getString("sub_text"))
                     .setGroup(bundle.getString("group"))
                     .setVibrate(new long[]{0, DEFAULT_VIBRATION})
@@ -138,7 +184,7 @@ public class FIRLocalMessagingHelper {
             notification.setSmallIcon(smallIconResId);
 
             //large icon
-            String largeIcon = bundle.getString("large-icon");
+            String largeIcon = bundle.getString("large_icon");
             if(largeIcon != null){
                 int largeIconResId = res.getIdentifier(largeIcon, "mipmap", packageName);
                 Bitmap largeIconBitmap = BitmapFactory.decodeResource(res, largeIconResId);
@@ -156,8 +202,17 @@ public class FIRLocalMessagingHelper {
 
             //sound
             if (bundle.containsKey("sound")) {
-                int soundResourceId = res.getIdentifier(bundle.getString("sound"), "raw", packageName);
-                notification.setSound(Uri.parse("android.resource://" + packageName + "/" + soundResourceId));
+                if(bundle.getString("sound").equals("default")) {
+                    Uri uri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                    notification.setSound(uri);
+                } else {
+                    try {
+                        int soundResourceId = res.getIdentifier(bundle.getString("sound"), "raw", packageName);
+                        notification.setSound(Uri.parse("android.resource://" + packageName + "/" + soundResourceId));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
 
             //color
@@ -172,7 +227,7 @@ public class FIRLocalMessagingHelper {
 
             //vibrate
             if(bundle.containsKey("vibrate")){
-                long vibrate = getLong(bundle, "vibrate");
+                long vibrate = bundle.getLong("vibrate", 0);
                 if(vibrate > 0){
                     notification.setVibrate(new long[]{0, vibrate});
                 }else{
@@ -190,7 +245,7 @@ public class FIRLocalMessagingHelper {
             i.putExtras(bundle);
             mContext.sendOrderedBroadcast(i, null);
 
-            if(!mIsForeground || bundle.getBoolean("show_in_foreground")){
+            if(!mIsForeground || bundle.getBoolean("show_in_foreground", true)){
                 Intent intent = new Intent(mContext, intentClass);
                 intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 intent.putExtras(bundle);

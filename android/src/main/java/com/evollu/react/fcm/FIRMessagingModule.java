@@ -32,10 +32,12 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Handler;
 
 public class FIRMessagingModule extends ReactContextBaseJavaModule implements LifecycleEventListener, ActivityEventListener {
     private final static String TAG = FIRMessagingModule.class.getCanonicalName();
     private FIRLocalMessagingHelper mFIRLocalMessagingHelper;
+    private android.os.Handler mHandler = new android.os.Handler();
 
     public FIRMessagingModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -53,9 +55,9 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
     }
 
     @ReactMethod
-    public void getInitialNotification(Promise promise){
+    public void getInitialNotification(Promise promise) {
         Activity activity = getCurrentActivity();
-        if(activity == null){
+        if (activity == null) {
             promise.resolve(null);
             return;
         }
@@ -63,7 +65,7 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
     }
 
     @ReactMethod
-    public void requestPermissions(){
+    public void requestPermissions() {
     }
 
     @ReactMethod
@@ -73,41 +75,66 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
     }
 
     @ReactMethod
+    public void onRegisteredListener(String event) {
+        if (event.equals("notification")) {
+            try {
+                Log.e("FCM", "111111111111111111111111");
+                if (getReactApplicationContext().hasActiveCatalystInstance()) {
+                    final Intent intent = getCurrentActivity().getIntent();
+                    Log.e("FCM", "22222222222222222222222222222");
+                    if (intent.getExtras().getString("action") != null && !intent.getExtras().getString("action").equals("")) {
+                        Log.e("FCM", "33333333333333333333333333333");
+                        mHandler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                sendEvent("FCMNotificationReceived", parseIntent(intent));
+                            }
+                        }, 500);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @ReactMethod
     public void presentLocalNotification(ReadableMap details) {
-        Bundle bundle = Arguments.toBundle(details);
+        Bundle bundle = FIRLocalMessagingHelper.toBundle(details);
         mFIRLocalMessagingHelper.sendNotification(bundle);
     }
 
     @ReactMethod
     public void scheduleLocalNotification(ReadableMap details) {
-        Bundle bundle = Arguments.toBundle(details);
+        Bundle bundle = FIRLocalMessagingHelper.toBundle(details);
         mFIRLocalMessagingHelper.sendNotificationScheduled(bundle);
     }
 
     @ReactMethod
     public void cancelLocalNotification(String notificationID) {
-      mFIRLocalMessagingHelper.cancelLocalNotification(notificationID);
-    }
-    @ReactMethod
-    public void cancelAllLocalNotifications() {
-      mFIRLocalMessagingHelper.cancelAllLocalNotifications();
+        mFIRLocalMessagingHelper.cancelLocalNotification(notificationID);
     }
 
     @ReactMethod
-    public void subscribeToTopic(String topic){
+    public void cancelAllLocalNotifications() {
+        mFIRLocalMessagingHelper.cancelAllLocalNotifications();
+    }
+
+    @ReactMethod
+    public void subscribeToTopic(String topic) {
         FirebaseMessaging.getInstance().subscribeToTopic(topic);
     }
 
     @ReactMethod
-    public void unsubscribeFromTopic(String topic){
+    public void unsubscribeFromTopic(String topic) {
         FirebaseMessaging.getInstance().unsubscribeFromTopic(topic);
     }
 
     @ReactMethod
-    public void getScheduledLocalNotifications(Promise promise){
+    public void getScheduledLocalNotifications(Promise promise) {
         ArrayList<Bundle> bundles = mFIRLocalMessagingHelper.getScheduledLocalNotifications();
         WritableArray array = Arguments.createArray();
-        for(Bundle bundle:bundles){
+        for (Bundle bundle : bundles) {
             array.pushMap(Arguments.fromBundle(bundle));
         }
         promise.resolve(array);
@@ -115,8 +142,8 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
 
     private void sendEvent(String eventName, Object params) {
         getReactApplicationContext()
-            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-            .emit(eventName, params);
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit(eventName, params);
     }
 
     private void registerTokenRefreshHandler() {
@@ -138,7 +165,7 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
     public void send(String senderId, ReadableMap payload) throws Exception {
         FirebaseMessaging fm = FirebaseMessaging.getInstance();
         RemoteMessage.Builder message = new RemoteMessage.Builder(senderId + "@gcm.googleapis.com")
-            .setMessageId(UUID.randomUUID().toString());
+                .setMessageId(UUID.randomUUID().toString());
 
         ReadableMapKeySetIterator iterator = payload.keySetIterator();
         while (iterator.hasNextKey()) {
@@ -162,7 +189,7 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
             case Boolean:
                 return String.valueOf(map.getBoolean(key));
             default:
-                throw new Exception("Unknown data type: " + map.getType(key).name() + " for message key " + key );
+                throw new Exception("Unknown data type: " + map.getType(key).name() + " for message key " + key);
         }
     }
 
@@ -172,33 +199,33 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
         getReactApplicationContext().registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-            if (getReactApplicationContext().hasActiveCatalystInstance()) {
-                RemoteMessage message = intent.getParcelableExtra("data");
-                WritableMap params = Arguments.createMap();
-                WritableMap fcmData = Arguments.createMap();
+                if (getReactApplicationContext().hasActiveCatalystInstance()) {
+                    RemoteMessage message = intent.getParcelableExtra("data");
+                    WritableMap params = Arguments.createMap();
+                    WritableMap fcmData = Arguments.createMap();
 
-                if (message.getNotification() != null) {
-                    Notification notification = message.getNotification();
-                    fcmData.putString("title", notification.getTitle());
-                    fcmData.putString("body", notification.getBody());
-                    fcmData.putString("color", notification.getColor());
-                    fcmData.putString("icon", notification.getIcon());
-                    fcmData.putString("tag", notification.getTag());
-                    fcmData.putString("action", notification.getClickAction());
-                }
-                params.putMap("fcm", fcmData);
-
-                if(message.getData() != null){
-                    Map<String, String> data = message.getData();
-                    Set<String> keysIterator = data.keySet();
-                    for(String key: keysIterator){
-                        params.putString(key, data.get(key));
+                    if (message.getNotification() != null) {
+                        Notification notification = message.getNotification();
+                        fcmData.putString("title", notification.getTitle());
+                        fcmData.putString("body", notification.getBody());
+                        fcmData.putString("color", notification.getColor());
+                        fcmData.putString("icon", notification.getIcon());
+                        fcmData.putString("tag", notification.getTag());
+                        fcmData.putString("action", notification.getClickAction());
                     }
-                }
-                sendEvent("FCMNotificationReceived", params);
-                abortBroadcast();
+                    params.putMap("fcm", fcmData);
 
-            }
+                    if (message.getData() != null) {
+                        Map<String, String> data = message.getData();
+                        Set<String> keysIterator = data.keySet();
+                        for (String key : keysIterator) {
+                            params.putString(key, data.get(key));
+                        }
+                    }
+                    sendEvent("FCMNotificationReceived", params);
+                    abortBroadcast();
+
+                }
             }
         }, intentFilter);
     }
@@ -217,13 +244,13 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
         }, intentFilter);
     }
 
-    private WritableMap parseIntent(Intent intent){
+    private WritableMap parseIntent(Intent intent) {
         WritableMap params;
         Bundle extras = intent.getExtras();
         if (extras != null) {
             try {
                 params = Arguments.fromBundle(extras);
-            } catch (Exception e){
+            } catch (Exception e) {
                 Log.e(TAG, e.getMessage());
                 params = Arguments.createMap();
             }
@@ -258,7 +285,7 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
     }
 
     @Override
-    public void onNewIntent(Intent intent){
+    public void onNewIntent(Intent intent) {
         sendEvent("FCMNotificationReceived", parseIntent(intent));
     }
 
