@@ -62,7 +62,7 @@ FCM.on = (event, callback) => {
     const listener = DeviceEventEmitter.addListener(nativeEvent, callback);
     
     if(event=='notification') {
-        FCM.handlerNotificationClick();
+        FCM.handleNotificationClick();
     }
 
     return function remove() {
