@@ -60,7 +60,7 @@ FCM.on = (event, callback) => {
         throw new Error('FCM invalid event');
     }
     const listener = DeviceEventEmitter.addListener(nativeEvent, callback);
-    FCM.onRegisteredListener(event);
+    RNFIRMessaging.onRegisteredListener(event);
 
     return function remove() {
         listener.remove();
