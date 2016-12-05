@@ -78,12 +78,9 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
     public void onRegisteredListener(String event) {
         if (event.equals("notification")) {
             try {
-                Log.e("FCM", "111111111111111111111111");
                 if (getReactApplicationContext().hasActiveCatalystInstance()) {
                     final Intent intent = getCurrentActivity().getIntent();
-                    Log.e("FCM", "22222222222222222222222222222");
                     if (intent.getExtras().getString("action") != null && !intent.getExtras().getString("action").equals("")) {
-                        Log.e("FCM", "33333333333333333333333333333");
                         mHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
