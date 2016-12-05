@@ -60,10 +60,7 @@ FCM.on = (event, callback) => {
         throw new Error('FCM invalid event');
     }
     const listener = DeviceEventEmitter.addListener(nativeEvent, callback);
-    
-    if(event=='notification') {
-        FCM.handleNotificationClick();
-    }
+    FCM.onRegisteredListener(event);
 
     return function remove() {
         listener.remove();
