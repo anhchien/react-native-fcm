@@ -32,12 +32,10 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.logging.Handler;
 
 public class FIRMessagingModule extends ReactContextBaseJavaModule implements LifecycleEventListener, ActivityEventListener {
     private final static String TAG = FIRMessagingModule.class.getCanonicalName();
     private FIRLocalMessagingHelper mFIRLocalMessagingHelper;
-    private android.os.Handler mHandler = new android.os.Handler();
 
     public FIRMessagingModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -81,12 +79,7 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
                 if (getReactApplicationContext().hasActiveCatalystInstance()) {
                     final Intent intent = getCurrentActivity().getIntent();
                     if (intent.getExtras().getString("action") != null && !intent.getExtras().getString("action").equals("")) {
-                        mHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                sendEvent("FCMNotificationReceived", parseIntent(intent));
-                            }
-                        }, 500);
+                        sendEvent("FCMNotificationReceived", parseIntent(intent));
                     }
                 }
             } catch (Exception e) {
