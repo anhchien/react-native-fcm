@@ -330,6 +330,11 @@ RCT_EXPORT_METHOD(getBadgeNumber: (RCTPromiseResolveBlock)resolve rejecter:(RCTP
   resolve(@([RCTSharedApplication() applicationIconBadgeNumber]));
 }
 
+RCT_EXPORT_METHOD(onRegisteredListener: (NSString *)event)
+{
+  
+}
+
 RCT_EXPORT_METHOD(send:(NSString*)senderId withPayload:(NSDictionary *)message)
 {
   NSMutableDictionary * mMessage = [message mutableCopy];
