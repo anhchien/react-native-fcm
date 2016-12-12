@@ -25,6 +25,9 @@ import com.facebook.react.bridge.ReadableType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 
 
@@ -103,6 +106,11 @@ public class FIRLocalMessagingHelper {
         if(map.hasKey("color"))
             bundle.putString("color", map.getString("color"));
 
+        if(map.hasKey("picture"))
+            bundle.putString("image", map.getString("picture"));
+        else if(map.hasKey("image"))
+            bundle.putString("image", map.getString("image"));
+
         if(map.hasKey("vibrate"))
             bundle.putLong("vibrate", (new Double(map.getDouble("vibrate"))).longValue());
 
@@ -161,6 +169,15 @@ public class FIRLocalMessagingHelper {
                     .setVibrate(new long[]{0, DEFAULT_VIBRATION})
                     .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                     .setExtras(bundle.getBundle("data"));
+
+            try {
+                if(!bundle.getString("image", "").equals("") && bundle.getString("image", "").startsWith("http")) {
+                    Bitmap bmp = getBitmapfromUrl(bundle.getString("image", ""));
+                    notification.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(bmp));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             //priority
             String priority = bundle.getString("priority", "");
@@ -384,6 +401,27 @@ public class FIRLocalMessagingHelper {
             }
         }
         return array;
+    }
+
+    /*
+    *To get a Bitmap image from the URL received
+    * */
+    public Bitmap getBitmapfromUrl(String imageUrl) {
+        try {
+            URL url = new URL(imageUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            Bitmap bitmap = BitmapFactory.decodeStream(input);
+            return bitmap;
+
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return null;
+
+        }
     }
 
     public void setApplicationForeground(boolean foreground){
