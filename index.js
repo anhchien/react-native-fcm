@@ -21,6 +21,12 @@ FCM.requestPermissions = () => {
     return RNFIRMessaging.requestPermissions();
 };
 
+FCM.checkInActiveMsg = () => {
+	setTimeout(()=>{
+			RNFIRMessaging.checkInActiveMsg();
+	}, 300);
+};
+
 FCM.presentLocalNotification = (details) => {
     details.local_notification = true;
     RNFIRMessaging.presentLocalNotification(details);
@@ -60,7 +66,6 @@ FCM.on = (event, callback) => {
         throw new Error('FCM invalid event');
     }
     const listener = DeviceEventEmitter.addListener(nativeEvent, callback);
-    RNFIRMessaging.onRegisteredListener(event);
 
     return function remove() {
         listener.remove();
