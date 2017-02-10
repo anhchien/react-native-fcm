@@ -4,6 +4,7 @@
 #import "RCTConvert.h"
 #import "RCTEventDispatcher.h"
 #import "RCTUtils.h"
+#import <AppDelegate.h>
 
 @import UserNotifications;
 @import FirebaseMessaging;
@@ -150,6 +151,15 @@ RCT_EXPORT_MODULE()
   
   // For iOS 10 data message (sent via FCM)
   [[FIRMessaging messaging] setRemoteMessageDelegate:self];
+}
+
+RCT_EXPORT_METHOD(checkInActiveMsg)
+{
+  NSDictionary* userInfo = [AppDelegate getLastUserInfo];
+  if(userInfo) {
+      [_bridge.eventDispatcher sendDeviceEventWithName:FCMNotificationReceived body:userInfo];
+      [AppDelegate clearLastUserInfo];
+  }
 }
 
 - (void)connectToFCM
@@ -330,11 +340,6 @@ RCT_EXPORT_METHOD(getBadgeNumber: (RCTPromiseResolveBlock)resolve rejecter:(RCTP
   resolve(@([RCTSharedApplication() applicationIconBadgeNumber]));
 }
 
-RCT_EXPORT_METHOD(onRegisteredListener: (NSString *)event)
-{
-  
-}
-
 RCT_EXPORT_METHOD(send:(NSString*)senderId withPayload:(NSDictionary *)message)
 {
   NSMutableDictionary * mMessage = [message mutableCopy];
@@ -363,7 +368,6 @@ RCT_EXPORT_METHOD(send:(NSString*)senderId withPayload:(NSDictionary *)message)
   }else{
     [_bridge.eventDispatcher sendDeviceEventWithName:FCMNotificationReceived body:notification.userInfo];
   }
-  
 }
 
 - (void)sendDataMessageFailure:(NSNotification *)notification

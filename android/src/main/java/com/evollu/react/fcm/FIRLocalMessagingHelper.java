@@ -64,86 +64,105 @@ public class FIRLocalMessagingHelper {
     public static Bundle toBundle(ReadableMap map) {
         Bundle bundle = new Bundle();
 
-        if(map.hasKey("body"))
-            bundle.putString("body", map.getString("body"));
+        try {
+            if (map.hasKey("body"))
+                bundle.putString("body", map.getString("body"));
 
-        if(map.hasKey("title"))
-            bundle.putString("title", map.getString("title"));
+            if (map.hasKey("title"))
+                bundle.putString("title", map.getString("title"));
 
-        if(map.hasKey("ticker"))
-            bundle.putString("ticker", map.getString("ticker"));
+            if (map.hasKey("ticker"))
+                bundle.putString("ticker", map.getString("ticker"));
 
-        if(map.hasKey("number"))
-            bundle.putInt("number", map.getInt("number"));
+            if (map.hasKey("number"))
+                bundle.putInt("number", map.getInt("number"));
 
-        if(map.hasKey("auto_cancel"))
-            bundle.putBoolean("auto_cancel", map.getBoolean("auto_cancel"));
+            if (map.hasKey("auto_cancel"))
+                bundle.putBoolean("auto_cancel", map.getBoolean("auto_cancel"));
 
-        if(map.hasKey("sub_text"))
-            bundle.putString("sub_text", map.getString("sub_text"));
+            if (map.hasKey("sub_text"))
+                bundle.putString("sub_text", map.getString("sub_text"));
 
-        if(map.hasKey("group"))
-            bundle.putString("group", map.getString("group"));
+            if (map.hasKey("group"))
+                bundle.putString("group", map.getString("group"));
 
-        if(map.hasKey("data") && map.getType("data") == ReadableType.Map)
-            bundle.putBundle("data", Arguments.toBundle(map.getMap("data")));
+//        if(map.hasKey("data") && map.getType("data") == ReadableType.Map)
+//            bundle.putBundle("data", Arguments.toBundle(map.getMap("data")));
 
-        if(map.hasKey("priority"))
-            bundle.putString("priority", map.getString("priority"));
+            if (map.hasKey("priority"))
+                bundle.putString("priority", map.getString("priority"));
 
-        if(map.hasKey("icon"))
-            bundle.putString("icon", map.getString("icon"));
+            if (map.hasKey("icon"))
+                bundle.putString("icon", map.getString("icon"));
 
-        if(map.hasKey("large_icon"))
-            bundle.putString("large_icon", map.getString("large_icon"));
+            if (map.hasKey("large_icon"))
+                bundle.putString("large_icon", map.getString("large_icon"));
 
-        if(map.hasKey("big_text"))
-            bundle.putString("big_text", map.getString("big_text"));
+            if (map.hasKey("big_text"))
+                bundle.putString("big_text", map.getString("big_text"));
 
-        if(map.hasKey("sound"))
-            bundle.putString("sound", map.getString("sound"));
+            if (map.hasKey("sound"))
+                bundle.putString("sound", map.getString("sound"));
 
-        if(map.hasKey("color"))
-            bundle.putString("color", map.getString("color"));
+            if (map.hasKey("color"))
+                bundle.putString("color", map.getString("color"));
 
-        if(map.hasKey("picture"))
-            bundle.putString("image", map.getString("picture"));
-        else if(map.hasKey("image"))
-            bundle.putString("image", map.getString("image"));
+            if (map.hasKey("vibrate"))
+                bundle.putLong("vibrate", (new Double(map.getDouble("vibrate"))).longValue());
 
-        if(map.hasKey("vibrate"))
-            bundle.putLong("vibrate", (new Double(map.getDouble("vibrate"))).longValue());
+            if (map.hasKey("lights"))
+                bundle.putBoolean("lights", map.getBoolean("lights"));
 
-        if(map.hasKey("lights"))
-            bundle.putBoolean("lights", map.getBoolean("lights"));
+            if (map.hasKey("show_in_foreground"))
+                bundle.putBoolean("show_in_foreground", map.getBoolean("show_in_foreground"));
 
-        if(map.hasKey("show_in_foreground"))
-            bundle.putBoolean("show_in_foreground", map.getBoolean("show_in_foreground"));
+            if (map.hasKey("click_action"))
+                bundle.putString("click_action", map.getString("click_action"));
 
-        if(map.hasKey("click_action"))
-            bundle.putString("click_action", map.getString("click_action"));
+            if (map.hasKey("id"))
+                bundle.putString("id", map.getString("id"));
 
-        if(map.hasKey("id"))
-            bundle.putString("id", map.getString("id"));
+            if (map.hasKey("fire_date"))
+                bundle.putLong("fire_date", (new Double(map.getDouble("fire_date"))).longValue());
 
-        if(map.hasKey("fire_date"))
-            bundle.putLong("fire_date", (new Double(map.getDouble("fire_date"))).longValue());
+            if (map.hasKey("repeat_interval"))
+                bundle.putString("repeat_interval", map.getString("repeat_interval"));
 
-        if(map.hasKey("repeat_interval"))
-            bundle.putString("repeat_interval", map.getString("repeat_interval"));
+            if (map.hasKey("picture"))
+                bundle.putString("image", map.getString("picture"));
+            else if (map.hasKey("image"))
+                bundle.putString("image", map.getString("image"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return bundle;
     }
 
+    /*
+    *To get a Bitmap image from the URL received
+    * */
+    public Bitmap getBitmapfromUrl(String imageUrl) {
+        try {
+            URL url = new URL(imageUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            Bitmap bitmap = BitmapFactory.decodeStream(input);
+            return bitmap;
+
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return null;
+
+        }
+    }
+
     public void sendNotification(Bundle bundle) {
         try {
-            Log.d(TAG, "1");
-            Class intentClass = getMainActivityClass();
-            if (intentClass == null) {
-                return;
-            }
-
-            Log.d(TAG, "2");
             if (bundle.getString("body") == null) {
                 return;
             }
@@ -170,57 +189,90 @@ public class FIRLocalMessagingHelper {
                     .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                     .setExtras(bundle.getBundle("data"));
 
-            try {
-                if(!bundle.getString("image", "").equals("") && bundle.getString("image", "").startsWith("http")) {
-                    Bitmap bmp = getBitmapfromUrl(bundle.getString("image", ""));
-                    notification.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(bmp));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
             //priority
-            String priority = bundle.getString("priority", "");
-            switch(priority) {
+            String priority = bundle.getString("priority");
+            if (priority == null || priority.equals(""))
+                priority = "max";
+            switch (priority) {
                 case "min":
                     notification.setPriority(NotificationCompat.PRIORITY_MIN);
-                break;
+                    break;
                 case "high":
                     notification.setPriority(NotificationCompat.PRIORITY_HIGH);
-                break;
+                    break;
                 case "max":
                     notification.setPriority(NotificationCompat.PRIORITY_MAX);
-                break;
+                    break;
                 default:
                     notification.setPriority(NotificationCompat.PRIORITY_DEFAULT);
             }
 
             //icon
-            String smallIcon = bundle.getString("icon", "ic_launcher");
-            int smallIconResId = res.getIdentifier(smallIcon, "mipmap", packageName);
-            notification.setSmallIcon(smallIconResId);
+            String smallIcon = "";
+            try {
+                smallIcon = bundle.getString("icon");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            try {
+                if (smallIcon == null || smallIcon.equals("")) {
+                    notification.setSmallIcon(getNotificationIcon());
+                } else {
+                    int smallIconResId = res.getIdentifier(smallIcon, "drawable", packageName);
+                    notification.setSmallIcon(smallIconResId);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             //large icon
             String largeIcon = bundle.getString("large_icon");
-            if(largeIcon != null){
-                int largeIconResId = res.getIdentifier(largeIcon, "mipmap", packageName);
+            if (largeIcon != null) {
+                int largeIconResId = res.getIdentifier(largeIcon, "drawable", packageName);
                 Bitmap largeIconBitmap = BitmapFactory.decodeResource(res, largeIconResId);
 
                 if (largeIconResId != 0 && (largeIcon != null || Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)) {
                     notification.setLargeIcon(largeIconBitmap);
                 }
             }
+//            else {
+//                try {
+//                    notification.setLargeIcon(BitmapFactory.decodeResource(mContext.getResources(), R.mimap.ic_launcher));
+//                } catch (Throwable e) {
+//                    e.printStackTrace();
+//                }
+//            }
+            try {
+                String big_image = bundle.getString("image");
+                if (big_image == null || big_image.equals("") || !big_image.startsWith("http")) {
+                    big_image = bundle.getString("picture");
+                }
+                Log.e(TAG, big_image);
+                if (big_image != null && !big_image.equals("") && big_image.startsWith("http")) {
+                    Bitmap bmp = getBitmapfromUrl(big_image);
+                    if (bmp != null) {
+                        NotificationCompat.BigPictureStyle bigPicStyle = new NotificationCompat.BigPictureStyle();
+                        bigPicStyle.setBigContentTitle(title);
+                        bigPicStyle.setSummaryText(bundle.getString("body"));
+                        bigPicStyle.bigPicture(bmp);
+                        notification.setStyle(bigPicStyle);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
 
             //big text
             String bigText = bundle.getString("big_text");
-            if(bigText != null){
+            if (bigText != null) {
                 notification.setStyle(new NotificationCompat.BigTextStyle().bigText(bigText));
             }
 
             //sound
             if (bundle.containsKey("sound")) {
-                if(bundle.getString("sound").equals("default")) {
-                    Uri uri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                if (bundle.getString("sound").equals("default")) {
+                    Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                     notification.setSound(uri);
                 } else {
                     try {
@@ -243,11 +295,11 @@ public class FIRLocalMessagingHelper {
             }
 
             //vibrate
-            if(bundle.containsKey("vibrate")){
+            if (bundle.containsKey("vibrate")) {
                 long vibrate = bundle.getLong("vibrate", 0);
-                if(vibrate > 0){
+                if (vibrate > 0) {
                     notification.setVibrate(new long[]{0, vibrate});
-                }else{
+                } else {
                     notification.setVibrate(null);
                 }
             }
@@ -257,18 +309,18 @@ public class FIRLocalMessagingHelper {
                 notification.setDefaults(NotificationCompat.DEFAULT_LIGHTS);
             }
 
-            Log.d(TAG, "broadcast intent before showing notification");
-            Intent i = new Intent("com.evollu.react.fcm.ReceiveLocalNotification");
-            i.putExtras(bundle);
-            mContext.sendOrderedBroadcast(i, null);
-
-            if(!mIsForeground || bundle.getBoolean("show_in_foreground", true)){
-                Intent intent = new Intent(mContext, intentClass);
+            if (!mIsForeground || bundle.getBoolean("show_in_foreground", true)) {
+                Intent intent = new Intent(mContext, getMainActivityClass());
                 intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 intent.putExtras(bundle);
+                try {
+                    intent.putExtra("link", bundle.getBundle("data").getString("link"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 intent.setAction(bundle.getString("click_action"));
 
-                int notificationID = bundle.containsKey("id") ? bundle.getString("id", "").hashCode() : (int) System.currentTimeMillis();
+                int notificationID = bundle.containsKey("id") ? bundle.getString("id").hashCode() : (int) System.currentTimeMillis();
                 PendingIntent pendingIntent = PendingIntent.getActivity(mContext, notificationID, intent,
                         PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -287,7 +339,7 @@ public class FIRLocalMessagingHelper {
                 }
             }
             //clear out one time scheduled notification once fired
-            if(!bundle.containsKey("repeat_interval") && bundle.containsKey("fire_date")) {
+            if (!bundle.containsKey("repeat_interval") && bundle.containsKey("fire_date")) {
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.remove(bundle.getString("id"));
                 editor.apply();
@@ -297,6 +349,18 @@ public class FIRLocalMessagingHelper {
         }
     }
 
+    public static PendingIntent buildPendingIntent(Intent i, Context context,
+                                                   int code) {
+        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        return PendingIntent.getActivity(context, code, i,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
+    }
+
+
+    public static int getNotificationIcon() {
+        return android.R.drawable.stat_notify_chat;
+    }
+
     public void sendNotificationScheduled(Bundle bundle) {
         Class intentClass = getMainActivityClass();
         if (intentClass == null) {
@@ -304,7 +368,7 @@ public class FIRLocalMessagingHelper {
         }
 
         String notificationId = bundle.getString("id");
-        if(notificationId == null){
+        if (notificationId == null) {
             Log.e(TAG, "failed to schedule notification because id is missing");
             return;
         }
@@ -321,25 +385,25 @@ public class FIRLocalMessagingHelper {
 
         Long interval = null;
         switch (bundle.getString("repeat_interval", "")) {
-          case "minute":
-              interval = (long) 60000;
-              break;
-          case "hour":
-              interval = AlarmManager.INTERVAL_HOUR;
-              break;
-          case "day":
-              interval = AlarmManager.INTERVAL_DAY;
-              break;
-          case "week":
-              interval = AlarmManager.INTERVAL_DAY * 7;
-              break;
+            case "minute":
+                interval = (long) 60000;
+                break;
+            case "hour":
+                interval = AlarmManager.INTERVAL_HOUR;
+                break;
+            case "day":
+                interval = AlarmManager.INTERVAL_DAY;
+                break;
+            case "week":
+                interval = AlarmManager.INTERVAL_DAY * 7;
+                break;
         }
 
-        if(interval != null){
+        if (interval != null) {
             getAlarmManager().setRepeating(AlarmManager.RTC_WAKEUP, fireDate, interval, pendingIntent);
-        } else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             getAlarmManager().setExact(AlarmManager.RTC_WAKEUP, fireDate, pendingIntent);
-        }else {
+        } else {
             getAlarmManager().set(AlarmManager.RTC_WAKEUP, fireDate, pendingIntent);
         }
 
@@ -375,7 +439,7 @@ public class FIRLocalMessagingHelper {
 
         java.util.Map<String, ?> keyMap = sharedPreferences.getAll();
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        for(java.util.Map.Entry<String, ?> entry:keyMap.entrySet()){
+        for (java.util.Map.Entry<String, ?> entry : keyMap.entrySet()) {
             cancelAlarm(entry.getKey());
         }
         editor.clear();
@@ -388,12 +452,12 @@ public class FIRLocalMessagingHelper {
         getAlarmManager().cancel(pendingIntent);
     }
 
-    public ArrayList<Bundle> getScheduledLocalNotifications(){
+    public ArrayList<Bundle> getScheduledLocalNotifications() {
         ArrayList<Bundle> array = new ArrayList<Bundle>();
         java.util.Map<String, ?> keyMap = sharedPreferences.getAll();
-        for(java.util.Map.Entry<String, ?> entry:keyMap.entrySet()){
+        for (java.util.Map.Entry<String, ?> entry : keyMap.entrySet()) {
             try {
-                JSONObject json = new JSONObject((String)entry.getValue());
+                JSONObject json = new JSONObject((String) entry.getValue());
                 Bundle bundle = BundleJSONConverter.convertToBundle(json);
                 array.add(bundle);
             } catch (JSONException e) {
@@ -403,28 +467,7 @@ public class FIRLocalMessagingHelper {
         return array;
     }
 
-    /*
-    *To get a Bitmap image from the URL received
-    * */
-    public Bitmap getBitmapfromUrl(String imageUrl) {
-        try {
-            URL url = new URL(imageUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput(true);
-            connection.connect();
-            InputStream input = connection.getInputStream();
-            Bitmap bitmap = BitmapFactory.decodeStream(input);
-            return bitmap;
-
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return null;
-
-        }
-    }
-
-    public void setApplicationForeground(boolean foreground){
+    public void setApplicationForeground(boolean foreground) {
         mIsForeground = foreground;
     }
 }

@@ -17,5 +17,6 @@ dependencies {
     compile 'com.facebook.react:react-native:+'
     compile 'com.google.firebase:firebase-core:9.+'
     compile 'com.google.firebase:firebase-messaging:9.+'
+    compile 'com.android.support:support-v4:23.0.1'
 }
 

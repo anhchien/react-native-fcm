@@ -31,7 +31,7 @@ public class MessagingService extends FirebaseMessagingService {
         params.putBoolean("auto_cancel", true);
         params.putString("id", "system_message");
 
-        List<String> fcm = Arrays.asList(new String[] {"title", "body", "color", "icon", "tag", "action"});
+        List<String> fcm = Arrays.asList(new String[] {"title", "body", "color", "icon", "tag", "click_action"});
 
         if(message.getData() != null){
             Map<String, String> data = message.getData();
@@ -51,29 +51,26 @@ public class MessagingService extends FirebaseMessagingService {
             params.putString("color", notification.getColor());
             params.putString("icon", notification.getIcon());
             params.putString("tag", notification.getTag());
-            params.putString("action", notification.getClickAction());
+            params.putString("click_action", notification.getClickAction());
         }
         params.putBundle("data", bundle);
         return params;
     }
 
     @Override
+    public void zzm(Intent intent) {
+        Log.i(TAG, "Received message " + intent.getExtras().toString());
+        FIRLocalMessagingHelper localMessagingHelper = new FIRLocalMessagingHelper(getApplication());
+        localMessagingHelper.sendNotification(intent.getExtras());
+    }
+
+    @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        Log.d(TAG, "Remote message received");
-        Intent i = new Intent("com.evollu.react.fcm.ReceiveNotification");
-        i.putExtra("data", remoteMessage);
-        sendOrderedBroadcast(i, null);
-        ApplicationInfo ai = null;
+        Log.d(TAG, "Remote message received " + remoteMessage.toString());
         try {
-            ai = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
-            Bundle bundle = ai.metaData;
-            boolean fcm_enable_custom_notification = bundle.getBoolean("com.aotasoft.fcm.customNotification", false);
-            if(fcm_enable_custom_notification) {
-                FIRLocalMessagingHelper localMessagingHelper = new FIRLocalMessagingHelper(getApplication());
-                remoteMessage.getData();
-                Bundle messageBundle = toBundle(remoteMessage);
-                localMessagingHelper.sendNotification(messageBundle);
-            }
+            FIRLocalMessagingHelper localMessagingHelper = new FIRLocalMessagingHelper(getApplication());
+            Bundle messageBundle = toBundle(remoteMessage);
+            localMessagingHelper.sendNotification(messageBundle);
         } catch (Throwable e) {
             e.printStackTrace();
         }

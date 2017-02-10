@@ -37,6 +37,7 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
     private final static String TAG = FIRMessagingModule.class.getCanonicalName();
     private FIRLocalMessagingHelper mFIRLocalMessagingHelper;
 
+
     public FIRMessagingModule(ReactApplicationContext reactContext) {
         super(reactContext);
         mFIRLocalMessagingHelper = new FIRLocalMessagingHelper((Application) reactContext.getApplicationContext());
@@ -73,22 +74,6 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
     }
 
     @ReactMethod
-    public void onRegisteredListener(String event) {
-        if (event.equals("notification")) {
-            try {
-                if (getReactApplicationContext().hasActiveCatalystInstance()) {
-                    final Intent intent = getCurrentActivity().getIntent();
-                    if (intent.getExtras().getString("action") != null && !intent.getExtras().getString("action").equals("")) {
-                        sendEvent("FCMNotificationReceived", parseIntent(intent));
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    @ReactMethod
     public void presentLocalNotification(ReadableMap details) {
         Bundle bundle = FIRLocalMessagingHelper.toBundle(details);
         mFIRLocalMessagingHelper.sendNotification(bundle);
@@ -113,6 +98,21 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
     @ReactMethod
     public void subscribeToTopic(String topic) {
         FirebaseMessaging.getInstance().subscribeToTopic(topic);
+    }
+
+    @ReactMethod
+    public void checkInActiveMsg() {
+        Log.e("FCM", "checkInActiveMsg");
+        try {
+            if (getReactApplicationContext().hasActiveCatalystInstance()) {
+                final Intent intent = getCurrentActivity().getIntent();
+                if (intent.getExtras().getString("action") != null && !intent.getExtras().getString("action").equals("")) {
+                    sendEvent("FCMNotificationReceived", parseIntent(intent));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @ReactMethod
@@ -189,6 +189,7 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
         getReactApplicationContext().registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                Log.e("FCM", "registerMessageHandler");
                 if (getReactApplicationContext().hasActiveCatalystInstance()) {
                     RemoteMessage message = intent.getParcelableExtra("data");
                     WritableMap params = Arguments.createMap();
@@ -276,6 +277,7 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
 
     @Override
     public void onNewIntent(Intent intent) {
+        Log.e("FCM", "onNewIntent");
         sendEvent("FCMNotificationReceived", parseIntent(intent));
     }
 
