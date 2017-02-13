@@ -105,10 +105,11 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
         Log.e("FCM", "checkInActiveMsg");
         try {
             if (getReactApplicationContext().hasActiveCatalystInstance()) {
+                Log.e("FCM", "hasActiveCatalystInstance");
                 final Intent intent = getCurrentActivity().getIntent();
-                if (intent.getExtras().getString("action") != null && !intent.getExtras().getString("action").equals("")) {
-                    sendEvent("FCMNotificationReceived", parseIntent(intent));
-                }
+//              if (intent.getExtras().getString("action") != null && !intent.getExtras().getString("action").equals("")) {
+                sendEvent("FCMNotificationReceived", parseIntent(intent));
+//              }
             }
         } catch (Exception e) {
             e.printStackTrace();
