@@ -21,10 +21,8 @@ FCM.requestPermissions = () => {
     return RNFIRMessaging.requestPermissions();
 };
 
-FCM.checkInActiveMsg = () => {
-	setTimeout(()=>{
-			RNFIRMessaging.checkInActiveMsg();
-	}, 300);
+FCM.checkInActiveMsg = (_callback) => {
+	  RNFIRMessaging.checkInActiveMsg(_callback);
 };
 
 FCM.presentLocalNotification = (details) => {

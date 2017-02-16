@@ -1,9 +1,9 @@
 #import "RNFIRMessaging.h"
 
-#import "RCTBridge.h"
-#import "RCTConvert.h"
-#import "RCTEventDispatcher.h"
-#import "RCTUtils.h"
+#import <React/RCTBridge.h>
+#import <RCTConvert.h>
+#import <RCTEventDispatcher.h>
+#import <React/RCTUtils.h>
 #import <AppDelegate.h>
 
 @import UserNotifications;
@@ -153,12 +153,15 @@ RCT_EXPORT_MODULE()
   [[FIRMessaging messaging] setRemoteMessageDelegate:self];
 }
 
-RCT_EXPORT_METHOD(checkInActiveMsg)
+RCT_EXPORT_METHOD(checkInActiveMsg: (RCTResponseSenderBlock)callback)
 {
   NSDictionary* userInfo = [AppDelegate getLastUserInfo];
   if(userInfo) {
       [_bridge.eventDispatcher sendDeviceEventWithName:FCMNotificationReceived body:userInfo];
       [AppDelegate clearLastUserInfo];
+      callback(@[@true, [NSNull null]]);
+  } else {
+    callback(@[@false, [NSNull null]]);
   }
 }
 

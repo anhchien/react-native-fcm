@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -101,19 +102,24 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
     }
 
     @ReactMethod
-    public void checkInActiveMsg() {
+    public void checkInActiveMsg(final Callback callback) {
         Log.e("FCM", "checkInActiveMsg");
         try {
             if (getReactApplicationContext().hasActiveCatalystInstance()) {
                 Log.e("FCM", "hasActiveCatalystInstance");
                 final Intent intent = getCurrentActivity().getIntent();
-//              if (intent.getExtras().getString("action") != null && !intent.getExtras().getString("action").equals("")) {
-                sendEvent("FCMNotificationReceived", parseIntent(intent));
-//              }
+                if (intent.getExtras().getString("link") != null) {
+                    sendEvent("FCMNotificationReceived", parseIntent(intent));
+                    callback.invoke(true, null);
+                    Log.e("FCM", "promise.resolve(1);");
+                    return;
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+        Log.e("FCM", "promise.resolve(0);");
+        callback.invoke(false, null);
     }
 
     @ReactMethod
