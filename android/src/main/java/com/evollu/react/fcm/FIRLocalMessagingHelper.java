@@ -247,7 +247,7 @@ public class FIRLocalMessagingHelper {
                 if (big_image == null || big_image.equals("") || !big_image.startsWith("http")) {
                     big_image = bundle.getString("picture");
                 }
-                Log.e(TAG, big_image);
+//                Log.e(TAG, big_image);
                 if (big_image != null && !big_image.equals("") && big_image.startsWith("http")) {
                     Bitmap bmp = getBitmapfromUrl(big_image);
                     if (bmp != null) {

@@ -110,6 +110,7 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
                 final Intent intent = getCurrentActivity().getIntent();
                 if (intent.getExtras().getString("link") != null) {
                     sendEvent("FCMNotificationReceived", parseIntent(intent));
+                    intent.removeExtra("");
                     callback.invoke(true, null);
                     Log.e("FCM", "promise.resolve(1);");
                     return;

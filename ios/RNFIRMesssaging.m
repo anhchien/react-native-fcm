@@ -1,10 +1,9 @@
 #import "RNFIRMessaging.h"
 
 #import <React/RCTBridge.h>
-#import <RCTConvert.h>
-#import <RCTEventDispatcher.h>
+#import <React/RCTConvert.h>
+#import <React/RCTEventDispatcher.h>
 #import <React/RCTUtils.h>
-#import <AppDelegate.h>
 
 @import UserNotifications;
 @import FirebaseMessaging;
@@ -110,6 +109,18 @@ RCT_ENUM_CONVERTER(NSCalendarUnit,
 
 @implementation RNFIRMessaging
 
+static NSDictionary* _userInfo = nil;
+
++(void)setLastUserInfo:(NSDictionary *) data
+{
+  _userInfo = data;
+}
+
++(void)clearLastUserInfo
+{
+  _userInfo = nil;
+}
+
 RCT_EXPORT_MODULE()
 
 @synthesize bridge = _bridge;
@@ -155,10 +166,9 @@ RCT_EXPORT_MODULE()
 
 RCT_EXPORT_METHOD(checkInActiveMsg: (RCTResponseSenderBlock)callback)
 {
-  NSDictionary* userInfo = [AppDelegate getLastUserInfo];
-  if(userInfo) {
-      [_bridge.eventDispatcher sendDeviceEventWithName:FCMNotificationReceived body:userInfo];
-      [AppDelegate clearLastUserInfo];
+  if(_userInfo) {
+      [_bridge.eventDispatcher sendDeviceEventWithName:FCMNotificationReceived body:_userInfo];
+    _userInfo = nil;
       callback(@[@true, [NSNull null]]);
   } else {
     callback(@[@false, [NSNull null]]);
