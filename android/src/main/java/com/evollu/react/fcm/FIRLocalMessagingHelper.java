@@ -216,7 +216,9 @@ public class FIRLocalMessagingHelper {
             }
             try {
                 if (smallIcon == null || smallIcon.equals("")) {
-                    notification.setSmallIcon(getNotificationIcon());
+//                    notification.setSmallIcon(getNotificationIcon());
+                    int smallIconResId = res.getIdentifier("ic_launcher", "mipmap", packageName);
+                    notification.setSmallIcon(smallIconResId);
                 } else {
                     int smallIconResId = res.getIdentifier(smallIcon, "drawable", packageName);
                     notification.setSmallIcon(smallIconResId);
